@@ -14,3 +14,27 @@ a {
 * {
   box-sizing: border-box;
 }
+.chart {
+  width: 50%;
+}
+canvas {
+  margin: 0px auto;
+}
+.form form{
+  text-align: center;
+}
+.navigation {
+  display: flex;
+  justify-content: space-between;
+}
+.navigation h1, h2 {
+  padding:40px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.nav {
+  width: 100%;
+}
+.nav h1{
+  text-align: center;
+}

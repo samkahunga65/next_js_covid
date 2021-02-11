@@ -1,65 +1,97 @@
 import Head from 'next/head'
+import { useState } from 'react'
 import styles from '../styles/Home.module.css'
+import { useAlert } from 'react-alert'
+import { instance } from '../components/endpoints'
+import axios from 'axios';
+import {Pie, Doughnut} from 'react-chartjs-2';
 
 export default function Home() {
+  const [data, setData] = useState({})
+  const [searchTerms, setSearch] = useState('kenya')
+  const [draw, setDraw] = useState(false)
+  const alert = useAlert()
+  const getData = (e) =>{
+    e.preventDefault()
+    alert.show(searchTerms)
+    const options = {
+      method: 'GET',
+      url: 'https://covid-19-data.p.rapidapi.com/country',
+      params: {name: `${searchTerms}`},
+      headers: {
+        'x-rapidapi-key': '2487f4eb87mshd79b147e163550bp1540eajsncf04b2a66fce',
+        'x-rapidapi-host': 'covid-19-data.p.rapidapi.com'
+      }
+    };
+    
+    axios.request(options).then(function (response) {
+      console.log(response.data);
+      let dt = response.data
+      const state = {
+        labels: [ 'sick', 'recovered',
+                 'critical', 'deaths'],
+        datasets: [
+          {
+            label: 'covid',
+            backgroundColor: [
+              '#B21F00',
+              '#C9DE00',
+              '#2FDE00',
+              '#00A6B4',
+              '#6800B4'
+            ],
+            hoverBackgroundColor: [
+            '#501800',
+            '#4B5000',
+            '#175000',
+            '#003350',
+            '#35014F'
+            ],
+            data: [ dt[0].confirmed-dt[0].critical-dt[0].deaths-dt[0].recovered, dt[0].recovered, dt[0].critical, dt[0].deaths]
+          }
+        ]
+      }
+      setData(state)
+      setDraw(true)
+    }).catch(function (err) {
+      console.error(err);
+      alert.error(err.message)
+    });
+  }
   return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
+    <div className="home">
+      <nav className="nav">
+        <h1>See the covid statistics in your country</h1>
+      </nav>
+     <div className="graph">
+       <div className="form">
+        <form onSubmit={getData}>
+          <label>
+            country:
+            <input type="text" name="name" onChange={e => setSearch(e.target.value)} value={searchTerms}/>
+          </label>
+          <input type="submit" value="search" />
+        </form>
+       </div>
+       <div className="chart">
+          {draw ? 
+          <Pie className="pie"
+          data={data}
+          options={{
+            title:{
+              display:true,
+              text:`covid in ${searchTerms}`,
+              fontSize:20
+            },
+            legend:{
+              display:true,
+              position:'right'
+            }
+          }}
+        />
+      : <p></p>}
+       </div>
+     </div>
     </div>
   )
 }
